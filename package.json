@@ -1,0 +1,22 @@
+{
+  "name": "m02uf4_2223",
+  "version": "1.0.0",
+  "description": "Código de la asignatura Bases de Datos. MongoDB &amp; NodeJS",
+  "main": "init.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Denn853/M02UF4_2223.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Denn853/M02UF4_2223/issues"
+  },
+  "homepage": "https://github.com/Denn853/M02UF4_2223#readme",
+  "dependencies": {
+    "mongodb": "^5.0.0"
+  }
+}
