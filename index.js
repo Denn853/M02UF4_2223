@@ -49,7 +49,11 @@ http.createServer(
 	
 		console.log('Alguien se conecta');
 		let collection = db.collection('characters');
+		//let col = collection.find().pretty;
+		//let coll = 'characters';
+		//let instruction = db.coll("characters").find({"name": { $exists: true}})
 		console.log(collection);
+		console.log(db.characters.find({"name": { $exists: true}}));
 		response.write('ola k ase');
 		response.end();
 }
