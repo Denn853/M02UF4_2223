@@ -43,8 +43,7 @@ db_connect()
 function send_characters (response) {
 	let collection = db.collection('characters');
 	
-	collection.find({}).toArray().then(
-		character => { 
+	collection.find({}).toArray().then(characters => { 
 			let names = [];
 			for (let i = 0; i < characters.length; i++) {
 				names.push(characters[i].name);
@@ -66,19 +65,22 @@ function send_age (response, url) {
 
 	let collection = db.collection('characters');
 	
-	collection.find({"name":url[2]}).toArray().then(character => {
-			let data = {
-				age: character[0].age
-			};
-
-			response.write(JSON.stringify(data));
+	collection.find({"name":url[2]}).project({_id:0, age:1}).toArray().then(character => {
+		if (character.length == 0) {
+			response.write("ERROR: Edad Erronea");
 			response.end();
+
+			return;
+		}
+
+		response.write(JSON.stringify(character[0]));
+		response.end();
 		}	
 	);
-
 }
 
 const http = require('http');
+const fs = require("fs");
 
 http.createServer(
 	function(request, response){
@@ -98,11 +100,23 @@ http.createServer(
 				break;
 				
 			default:
-				response.write("Página Principal");
-				response.end();
+				fs.readFile("index.html", function(err, data) {
+					if (err) {
+						console.error(err);
+						response.writeHead(404, {"Content-Type":"text/html"});
+						response.write("Errot 404: el arcvhivo no está en este castillo");
+						response.end();
+						return;
+					}
+					
+					response.writeHead(200, {"Content-Type":"text/html"});
+					response.write(data);
+         		response.end();
+				});
 		}
 
-
+		
+		
 console.log(request.url);
 		
 	/*	console.log('Alguien se conecta');
@@ -110,14 +124,4 @@ console.log(request.url);
 }
 
 ).listen(8080);
-
-
-
-
-
-
-
-
-
-
 
