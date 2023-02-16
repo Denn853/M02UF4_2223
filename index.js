@@ -105,7 +105,7 @@ function send_characters_items (response, url) {
 		
 			let collection = db.collection("characters_items");
 			
-			collection.find({ "id_character": idCharacter[0]._id }).project({ _id: 0, id_item: 1 }).toArray()
+			collection.find({ "id_character": idCharacter[0].id_character }).project({ _id: 0, id_item: 1 }).toArray()
 				.then(idItem => {
 					
 					console.log(idItem);
@@ -151,7 +151,7 @@ http.createServer(
 				break;
 
 			case "items":
-				if (url[2] != "") {
+				if (url[2]) {
 					send_characters_items(response, url);
 					break;
 				}
