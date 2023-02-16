@@ -79,6 +79,51 @@ function send_age (response, url) {
 	);
 }
 
+function send_items (response) {
+   let collection = db.collection('items');
+
+   collection.find({}).toArray().then(items => {
+         let name = [];
+         for (let i = 0; i < items.length; i++) {
+            name.push(items[i].item);
+         }
+
+         response.write(JSON.stringify(name));
+         response.end();
+      }
+   );
+}
+
+function send_characters_items (response, url) {
+	let collection = db.collection("characters");
+
+	collection.find({ "name": url[2] }).project({_id: 0, id_character: 1}).toArray()
+		.then(idCharacter => {
+			console.log(idCharacter);
+			let collection = db.collection("characters_items");
+			collection.find({ "id_character": idCharacter[0].id_character}).project({_id: 0, id_item: 1}).toArray()
+				.then(idItem => {
+					console.log(idItem);
+					let collection = db.collection("items");
+					let itemsName = [];
+
+					for (let i = 0; i < idItem.length; i++) {
+						collection.find({ "id_item": idItem[i].id_item }).project({ _id: item: 1}).toArray()
+							.then(item => {
+								itemsName.push(item[0].item);
+								console.log(item);
+							});
+					}
+
+					setTimeout(() => {
+						response.write(JSON.stringify(itemsName));
+						response.end();
+					}, 1000);
+				});
+		})
+}
+
+
 const http = require('http');
 const fs = require("fs");
 
@@ -98,7 +143,16 @@ http.createServer(
 			case "age":
 				send_age(response, url);
 				break;
-				
+
+			case "items":
+				if (url[2] != "") {
+					send_characters_items(response, url);
+					break;
+				}
+
+            send_items(response);
+            break;
+
 			default:
 				fs.readFile("index.html", function(err, data) {
 					if (err) {
