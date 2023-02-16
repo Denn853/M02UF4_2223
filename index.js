@@ -95,20 +95,26 @@ function send_items (response) {
 }
 
 function send_characters_items (response, url) {
+
 	let collection = db.collection("characters");
 
-	collection.find({ "name": url[2] }).project({_id: 0, id_character: 1}).toArray()
+	collection.find({ "name": url[2] }).project({ _id: 0, id_character: 1 }).toArray()
 		.then(idCharacter => {
+
 			console.log(idCharacter);
+		
 			let collection = db.collection("characters_items");
-			collection.find({ "id_character": idCharacter[0].id_character}).project({_id: 0, id_item: 1}).toArray()
+			
+			collection.find({ "id_character": idCharacter[0]._id }).project({ _id: 0, id_item: 1 }).toArray()
 				.then(idItem => {
+					
 					console.log(idItem);
+					
 					let collection = db.collection("items");
 					let itemsName = [];
 
 					for (let i = 0; i < idItem.length; i++) {
-						collection.find({ "id_item": idItem[i].id_item }).project({ _id: item: 1}).toArray()
+						collection.find({ "id_item": idItem[i].id_item }).project({ _id: 0, item: 1 }).toArray()
 							.then(item => {
 								itemsName.push(item[0].item);
 								console.log(item);
@@ -120,7 +126,7 @@ function send_characters_items (response, url) {
 						response.end();
 					}, 1000);
 				});
-		})
+		});
 }
 
 
