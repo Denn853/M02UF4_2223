@@ -79,6 +79,22 @@ function send_age (response, url) {
 	);
 }
 
+function send_items (response) {
+   let collection = db.collection('items');
+
+   collection.find({}).toArray().then(items => {
+         let name = [];
+         for (let i = 0; i < items.length; i++) {
+            name.push(items[i].item);
+         }
+
+         response.write(JSON.stringify(name));
+         response.end();
+      }
+   );
+}
+
+
 const http = require('http');
 const fs = require("fs");
 
@@ -98,7 +114,11 @@ http.createServer(
 			case "age":
 				send_age(response, url);
 				break;
-				
+
+			case "items":
+            send_items(response);
+            break;
+
 			default:
 				fs.readFile("index.html", function(err, data) {
 					if (err) {
