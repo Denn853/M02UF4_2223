@@ -5,9 +5,7 @@
 function show_number(num) {
 	console.log(num);
 }
-
 console.log("ola k ase")
-
 for (let i = 0; i < 10; i++) {
 	show_number(i);
 }
@@ -79,6 +77,41 @@ function send_age (response, url) {
 	);
 }
 
+function send_characters_items (response, url) {
+
+	let collection = db.collection("characters");
+
+	collection.find({ "name": url[2] }).project({ _id: 0, id_character: 1 }).toArray()
+		.then(idCharacter => {
+
+			console.log(idCharacter);
+		
+			let collection = db.collection("characters_items");
+			
+			collection.find({ "id_character": idCharacter[0].id_character }).project({ _id: 0, id_item: 1 }).toArray()
+				.then(idItem => {
+					
+					console.log(idItem);
+					
+					let collection = db.collection("items");
+					let itemsName = [];
+
+					for (let i = 0; i < idItem.length; i++) {
+						collection.find({ "id_item": idItem[i].id_item }).project({ _id: 0, item: 1 }).toArray()
+							.then(item => {
+								itemsName.push(item[0].item);
+								console.log(item);
+							});
+					}
+
+					setTimeout(() => {
+						response.write(JSON.stringify(itemsName));
+						response.end();
+					}, 1000);
+				});
+		});
+}
+
 function send_items (response) {
    let collection = db.collection('items');
 
@@ -93,7 +126,6 @@ function send_items (response) {
       }
    );
 }
-
 
 const http = require('http');
 const fs = require("fs");
@@ -116,6 +148,11 @@ http.createServer(
 				break;
 
 			case "items":
+				if (url[2]) {
+					send_characters_items(response, url);
+					break;
+				}
+
             send_items(response);
             break;
 
@@ -144,4 +181,3 @@ console.log(request.url);
 }
 
 ).listen(8080);
-
