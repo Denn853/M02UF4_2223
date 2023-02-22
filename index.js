@@ -20,6 +20,11 @@ const client = new MongoClient(url);
 // Database Name
 const dbName = 'abascal';
 
+const http = require('http');
+const fs = require("fs");
+
+const qs = require("querystring");
+
 let db;
 
 async function db_connect() {
@@ -140,8 +145,52 @@ function send_items (response) {
    );
 }
 
-const http = require('http');
-const fs = require("fs");
+function insert_character (request, response) {
+	if (request.method != "POST") {
+		response.write("ERROR: Formulario no enviado");
+		response.end();
+
+		return;
+	}
+
+	let data = "";
+	request.on('data', function(character_chunk){
+		data += character_chunk;
+	});
+	
+	request.on('end', function() {
+		console.log(data);
+		
+		let info = qs.parse(data);
+		console.log(info);
+
+		let collection = db.collection("characters");
+		
+		if (info.name == undefined) {
+			response.write("ERROR: Nombre no definido");
+			response.end();
+			return;
+		}
+
+		if (info.age == undefined) {
+			response.write("ERROR: Edad no definido");
+			response.end();
+			return;
+		}
+
+		let insert_info = {
+			name: info.name,
+			age: parseInt(info.age)
+		};
+
+		collection.insertOne(insert_info);
+			
+		response.write("Nuevo personaje " + insert_info.name + " insertado");
+		response.end();
+	});
+
+}
+
 
 http.createServer(
 	function(request, response){
@@ -168,6 +217,10 @@ http.createServer(
 
             send_items(response);
             break;
+
+			case "character_form":
+				insert_character(request, response);
+				break;
 
 			default:
 				fs.readFile("index.html", function(err, data) {

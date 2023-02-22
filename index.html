@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
+		<meta charset="UTF-8" />
 		<title>MongENTI</title>
 		<meta charset="UTF-8">
 	</head>
@@ -18,6 +19,19 @@
 		<main id="contents-main">
 			<h2>Contenidos de la página</h2>
 		</main>
+		
+		<form action="/character_form" method="POST">
+			<h2>Añadir personaje</h2>
+			<p><label for="character-name">Nombre</label>
+				<input type="text" name="name" id="character-name"/></p>
+		
+			<p><label for="character-age">Edad</label>
+				<input type="number" name="age" id="character-age"/></p>
+			
+			<p><input type="submit" value="¡Añadir personaje!"/></p>
+			
+			
+		</form>
 
 		<script>
 			function getCharacters() {
@@ -51,8 +65,7 @@
 					document.getElementById("contents-main").innerHTML = list;
 				});
 			}
-
+				
 		</script>
-
 	</body>
 </html>
