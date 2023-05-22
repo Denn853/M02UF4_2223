@@ -3,11 +3,11 @@
 
 /*
 function show_number(num) {
-	console.log(num);
+        console.log(num);
 }
 console.log("ola k ase")
 for (let i = 0; i < 10; i++) {
-	show_number(i);
+        show_number(i);
 }
 */
 
@@ -26,6 +26,7 @@ const fs = require("fs");
 const qs = require("querystring");
 
 let db;
+let collection;
 
 async function db_connect() {
   // Use connect method to connect to the server
@@ -40,210 +41,279 @@ async function db_connect() {
 }
 
 db_connect()
-  .then(info => console.log(info))
-  .catch(msg => console.error(msg));
+        .then(console.log)
+        .catch(console.error);
 
 function send_characters (response) {
-	let collection = db.collection('characters');
-	
-	collection.find({}).toArray().then(characters => { 
-			let names = [];
-			for (let i = 0; i < characters.length; i++) {
-				names.push(characters[i].name);
-			}
-			
-			response.write(JSON.stringify(names));
-			response.end();
-		}	
-	);
+        collection = db.collection('characters');
+
+        collection.find({}).toArray()
+                .then(characters => {
+                        console.log(characters);
+
+                        let names = [];
+                        for (let i = 0; i < characters.length; i++) {
+                                names.push(characters[i].name);
+                        }
+
+                        response.write(JSON.stringify(names));
+                        response.end();
+                }
+        );
 }
 
 function send_age (response, url) {
-	
-	if (url.length < 3) {
-		response.write("ERROR: Edad Erronea");
-		response.end();
-		return;
-	}
 
-	let collection = db.collection('characters');
-	
-	collection.find({"name":url[2]}).project({_id:0, age:1}).toArray().then(character => {
-		if (character.length == 0) {
-			response.write("ERROR: Edad Erronea");
-			response.end();
+        if (url.length < 3) {
+                response.write("ERROR: Edad Errónea");
+                response.end();
+                return;
+        }
 
-			return;
-		}
+        collection = db.collection('characters');
 
-		response.write(JSON.stringify(character[0]));
-		response.end();
-		}	
-	);
+        collection.find({"name": url[2]}).project({_id: 0, age: 1}).toArray()
+                .then(character => {
+
+                        console.log(characters);
+
+                        if (character.length == 0) {
+                                response.write("ERROR: Edad Errónea");
+                                response.end();
+                                return;
+                        }
+
+                        response.write(JSON.stringify(character[0]));
+                        response.end();
+                }
+        );
 }
 
 function send_character_items (response, url) {
-	let name = url[2].trim();
-	
-	if (name == "") {
-		response.write("ERROR: URL mal formada");
-		response.end();
-		
-		return;
-	}
-	
-	let collection = db.collection('characters');
-	collection.find({"name":name}).toArray().then(character => {
-		if (character.length != 1) {
-			response.write("ERROR: el personaje " + name + " no existe");
-			response.end();
-			
-			return;
-		}
-		
-		let id = character[0].id_character;
-		
-		let collection = db.collection('characters_items');
-		collection.find({"id_character":id}).toArray().then(ids => {
-			if (ids.length == 0) {
-				response.write("[]");
-				response.end();
-				
-				return;
-			}
-		
-			let ids_items = [];
 
-			ids.forEach(element => {
-				ids_items.push(element.id_item);
-			});
+        let name = url[2].trim();
 
-			let collection = db.collection('items');
-			console.log(ids);
-			collection.find({"id_item": {$in:ids_items} }).toArray().then(items => {
-				response.write(JSON.stringify(items));
-				response.end();
+        if (name == "") {
+                response.write("ERROR: URL mal formada");
+                response.end();
+                return;
+        }
 
-				return;
-			});
-		});
-	});	
+        collection = db.collection('characters');
+
+        collection.find({"name": name}).project({_id: 0, id_character: 1}).toArray()
+                .then(character => {
+                        if (character.length != 1) {
+                                response.write("ERROR: el personaje " + name + " no existe");
+                                response.end();
+                                return;
+                        }
+
+                collection = db.collection("characters_items");
+
+                collection.find({"id_character": id[0].id_character}).project({_id: 0, id_item: 1}).toArray()
+                        .then(ids => {
+
+                                console.log(ids);
+
+                                if (ids.length == 0) {
+                                        response.write("[]");
+                                        response.end();
+                                        return;
+                                }
+
+                        collection = db.collection("items");
+
+                        let ids_items = [];
+
+                        ids.forEach(element => ids_items.push(element.id_item));
+
+                        collection.find({"id_item": {$in: ids_items} }).project({_id: 0, item: 1}).toArray()
+                                .then(items => {
+
+                                        let names = [];
+
+                                        items_name.forEach(item => names.push(item.item));
+
+                                        response.write(JSON.stringify(names));
+                                        response.end();
+                                        return;
+                        });
+                });
+        });
 }
 
 function send_items (response) {
-   let collection = db.collection('items');
 
-   collection.find({}).toArray().then(items => {
-         let name = [];
-         for (let i = 0; i < items.length; i++) {
-            name.push(items[i].item);
+        if (url.length >= 3) {
+                send_character_items(response, url);
+                return;
+        }
+
+         collection = db.collection('items');
+
+   collection.find({}).toArray()
+                .then(items => {
+         let items_name = [];
+
+                                 for (let i = 0; i < items.length; i++) {
+            items_name.push(items[i].item);
          }
 
-         response.write(JSON.stringify(name));
+         response.write(JSON.stringify(items_name));
          response.end();
       }
    );
 }
 
+function send_weapons (response) {
+
+   collection = db.collection('weapons');
+
+   collection.find({}).toArray()
+    .then(weapons => {
+
+                                console.log(weapons);
+
+                                 let weapons_name = [];
+
+                                 for (let i = 0; i < weapons.length; i++) {
+            weapons_name.push(weapons[i].weapon);
+         }
+
+         response.write(JSON.stringify(weapons_name));
+         response.end();
+      }
+   );
+}
+
+function send_character_data(response, id_character) {
+
+        collection = db.collection('characters');
+
+        collection.find({ "id_character": Number(id_character) }).project({ _id: 0 }).toArray()
+                .then(character => {
+                        response.write(JSON.stringify(character));
+                        response.end();
+                });
+}
+
 function insert_character (request, response) {
-	if (request.method != "POST") {
-		response.write("ERROR: Formulario no enviado");
-		response.end();
+        if (request.method != "POST") {
+                response.write("ERROR: Formulario no enviado");
+                response.end();
 
-		return;
-	}
+                return;
+        }
 
-	let data = "";
-	request.on('data', function(character_chunk){
-		data += character_chunk;
-	});
-	
-	request.on('end', function() {
-		console.log(data);
-		
-		let info = qs.parse(data);
-		console.log(info);
+        let data = "";
+        request.on('data', character_chunk =>   data += character_chunk);
 
-		let collection = db.collection("characters");
-		
-		if (info.name == undefined) {
-			response.write("ERROR: Nombre no definido");
-			response.end();
-			return;
-		}
+        request.on('end', () => {
 
-		if (info.age == undefined) {
-			response.write("ERROR: Edad no definido");
-			response.end();
-			return;
-		}
+                console.log(data);
 
-		let insert_info = {
-			name: info.name,
-			age: parseInt(info.age)
-		};
+                let info = qs.parse(data);
+                console.log(info);
 
-		collection.insertOne(insert_info);
-			
-		response.write("Nuevo personaje " + insert_info.name + " insertado");
-		response.end();
-	});
+                let collection = db.collection("characters");
+
+                if (info.name == undefined) {
+                        response.write("ERROR: Nombre no definido");
+                        response.end();
+                        return;
+                }
+
+                if (info.age == undefined) {
+                        response.write("ERROR: Edad no definida");
+                        response.end();
+                        return;
+                }
+
+                let insert_info = {
+                        name: info.name,
+                        age: parseInt(info.age)
+                };
+
+                collection.insertOne(insert_info);
+
+                response.write("Nuevo personaje " + insert_info.name + " insertado");
+                response.end();
+        });
 
 }
 
 
-http.createServer(
-	function(request, response){
-		if (request.url == "/favicon.ico") {
-			return;
-		}
+http.createServer(function(request, response) {
 
-		let url = request.url.split("/");
-		
-		switch (url[1]){
-			case "characters":
-				send_characters(response);
-				break;
-				
-			case "age":
-				send_age(response, url);
-				break;
+                if (request.url == "/favicon.ico") {
+                        return;
+                }
 
-			case "items":
-				if (url[2]) {
-					send_character_items (response, url);
-					break;
-				}
+                console.log("Alguien se conecta");
 
-            send_items(response);
-            break;
+                let url = request.url.split("/");
+                let params = request.url.split("?");
 
-			case "character_form":
-				insert_character(request, response);
-				break;
+                switch (url[1]){
 
-			default:
-				fs.readFile("index.html", function(err, data) {
-					if (err) {
-						console.error(err);
-						response.writeHead(404, {"Content-Type":"text/html"});
-						response.write("Errot 404: el arcvhivo no está en este castillo");
-						response.end();
-						return;
-					}
-					
-					response.writeHead(200, {"Content-Type":"text/html"});
-					response.write(data);
-         		response.end();
-				});
-		}
+                        case "characters":
+                                send_characters(response);
+                                break;
 
-		
-		
+                        case "age":
+                                send_age(response, url);
+                                break;
+
+                        case "items":
+                                if (url[2]) {
+                                        send_character_items (response, url);
+                                        break;
+                                }
+
+        send_items(response, url);
+        break;
+
+                        case "weapons":
+                                send_weapons(response);
+                                break;
+
+                        case "character_form":
+                                insert_character(request, response);
+                                break;
+
+                        default:
+
+                                if (params[1]) {
+                                        let parameter = params[1].split("=");
+                                        let id_character = parameter[1];
+
+                                        console.log(id_character);
+
+                                        send_character_data(response, id_character);
+                                        return;
+                                }
+
+                                fs.readFile("index.html", function(err, data) {
+                                        if (err) {
+                                                console.error(err);
+                                                response.writeHead(404, {"Content-Type":"text/html"});
+                                                response.write("Error 404: archivo no encontrado");
+                                                response.end();
+                                                return;
+                                        }
+
+                                        response.writeHead(200, {"Content-Type":"text/html"});
+                                        response.write(data);
+                response.end();
+                                });
+                }
+
+
+
 console.log(request.url);
-		
-	/*	console.log('Alguien se conecta');
-		console.log(collection); */
-}
 
+        /*      console.log('Alguien se conecta');
+                console.log(collection); */
+}
 ).listen(8080);
